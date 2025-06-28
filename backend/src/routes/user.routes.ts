@@ -1,8 +1,9 @@
 import { Router, Request, Response, RequestHandler } from "express";
-import jwt from "jsonwebtoken";
+const jwt = require("jsonwebtoken");
 // Ensure the correct path to the user model
 import User from "../models/user.model";
 import { ICreateUser, IUpdateUser, IUserResponse } from "../types/user.types";
+import { authenticateToken } from "../middleware/auth.middleware";
 
 const router = Router();
 
@@ -69,7 +70,7 @@ router.post("/", (async (req: Request, res: Response) => {
     const userResponse = userToResponse(newUser);
 
     // Generate JWT token
-    const token = generateToken(newUser._id.toString());
+    const token = generateToken((newUser as any)._id.toString());
 
     res.status(201).json({
       message: "User registered successfully",
@@ -255,9 +256,20 @@ router.delete("/:id", (async (req: Request, res: Response) => {
 }) as RequestHandler);
 
 // POST /api/users/:id/health-conditions - Add health condition
-router.post("/:id/health-conditions", (async (req: Request, res: Response) => {
+router.post("/:id/health-conditions", authenticateToken, (async (
+  req: Request,
+  res: Response
+) => {
   try {
     const { condition } = req.body;
+    const userId = req.params.id;
+
+    // Check if user is modifying their own data
+    if (req.user?.userId !== userId) {
+      return res.status(403).json({
+        error: "You can only modify your own data",
+      });
+    }
 
     if (!condition || typeof condition !== "string") {
       return res.status(400).json({
@@ -265,7 +277,7 @@ router.post("/:id/health-conditions", (async (req: Request, res: Response) => {
       });
     }
 
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).json({
@@ -289,12 +301,21 @@ router.post("/:id/health-conditions", (async (req: Request, res: Response) => {
 }) as RequestHandler);
 
 // DELETE /api/users/:id/health-conditions/:condition - Remove health condition
-router.delete("/:id/health-conditions/:condition", (async (
+router.delete("/:id/health-conditions/:condition", authenticateToken, (async (
   req: Request,
   res: Response
 ) => {
   try {
-    const user = await User.findById(req.params.id);
+    const userId = req.params.id;
+
+    // Check if user is modifying their own data
+    if (req.user?.userId !== userId) {
+      return res.status(403).json({
+        error: "You can only modify your own data",
+      });
+    }
+
+    const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).json({
@@ -318,9 +339,20 @@ router.delete("/:id/health-conditions/:condition", (async (
 }) as RequestHandler);
 
 // POST /api/users/:id/allergies - Add allergy
-router.post("/:id/allergies", (async (req: Request, res: Response) => {
+router.post("/:id/allergies", authenticateToken, (async (
+  req: Request,
+  res: Response
+) => {
   try {
     const { allergy } = req.body;
+    const userId = req.params.id;
+
+    // Check if user is modifying their own data
+    if (req.user?.userId !== userId) {
+      return res.status(403).json({
+        error: "You can only modify your own data",
+      });
+    }
 
     if (!allergy || typeof allergy !== "string") {
       return res.status(400).json({
@@ -328,7 +360,7 @@ router.post("/:id/allergies", (async (req: Request, res: Response) => {
       });
     }
 
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).json({
@@ -352,12 +384,21 @@ router.post("/:id/allergies", (async (req: Request, res: Response) => {
 }) as RequestHandler);
 
 // DELETE /api/users/:id/allergies/:allergy - Remove allergy
-router.delete("/:id/allergies/:allergy", (async (
+router.delete("/:id/allergies/:allergy", authenticateToken, (async (
   req: Request,
   res: Response
 ) => {
   try {
-    const user = await User.findById(req.params.id);
+    const userId = req.params.id;
+
+    // Check if user is modifying their own data
+    if (req.user?.userId !== userId) {
+      return res.status(403).json({
+        error: "You can only modify your own data",
+      });
+    }
+
+    const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).json({
