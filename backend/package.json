@@ -4,18 +4,22 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon server.ts",
+    "start": "ts-node server.ts",
+    "create-test-users": "ts-node test-users.ts",
+    "test-connection": "ts-node test-connection.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
   "dependencies": {
     "@google/genai": "^1.7.0",
     "bcryptjs": "^3.0.2",
     "dotenv": "^17.0.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.17.0",
     "mongoose": "^8.16.1",
     "nodemon": "^3.1.10"
   },

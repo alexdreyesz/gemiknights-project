@@ -1,11 +1,19 @@
 import express from "express";
-import userRoutes from "./src/routes/user.routes.js"; // Add `.js` for ESM compatibility
-import authRoutes from "./src/routes/auth.routes.js";
+import dotenv from "dotenv";
+import { connectDB } from "./src/config/database";
+import userRoutes from "./src/routes/user.routes";
+import authRoutes from "./src/routes/auth.routes";
+
+// Load environment variables
+dotenv.config();
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 app.use(express.json());
+
+// Connect to MongoDB
+connectDB();
 
 // Routes
 app.use("/api/users", userRoutes);
