@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
-const SignIn: React.FC = () => {
+const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -8,8 +9,8 @@ const SignIn: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle sign in logic here
-    console.log('Sign in attempt:', { email, password, rememberMe });
+    // Handle login logic here
+    console.log('Login attempt:', { email, password, rememberMe });
   };
 
   return (
@@ -19,18 +20,18 @@ const SignIn: React.FC = () => {
         <div className="text-center">
           <div className="flex justify-center mb-6">
             <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-xl">M</span>
+              <span className="text-white font-bold text-xl">AI</span>
             </div>
           </div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome back
+            Welcome Back
           </h2>
           <p className="text-gray-600">
-            Sign in to your MainLine account
+            Log In to your Main Line account
           </p>
         </div>
 
-        {/* Sign In Form */}
+        {/* Login Form */}
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             {/* Email Field */}
@@ -108,13 +109,17 @@ const SignIn: React.FC = () => {
             </a>
           </div>
 
-          {/* Sign In Button */}
-          <button
-            type="submit"
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
-          >
-            Sign in
-          </button>
+          {/* Login Button */}
+          <Link to="/user-profile">
+            <button
+              type="submit"
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+            >
+              Log In
+            </button>
+          </Link>
+
+          <br></br>
 
           {/* Divider */}
           <div className="relative">
@@ -128,7 +133,7 @@ const SignIn: React.FC = () => {
             </div>
           </div>
 
-          {/* Social Sign In */}
+          {/* Social Login */}
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
@@ -157,9 +162,9 @@ const SignIn: React.FC = () => {
           <div className="text-center">
             <p className="text-sm text-gray-600">
               Don't have an account?{' '}
-              <a href="#" className="font-medium text-red-600 hover:text-red-500 transition-colors">
+              <Link to="/sign-up" className="font-medium text-red-600 hover:text-red-500 transition-colors">
                 Sign up
-              </a>
+              </Link>
             </p>
           </div>
         </form>
@@ -168,4 +173,4 @@ const SignIn: React.FC = () => {
   );
 };
 
-export default SignIn;
+export default Login;

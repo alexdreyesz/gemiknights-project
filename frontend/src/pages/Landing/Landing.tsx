@@ -19,11 +19,28 @@ const Landing: React.FC = () => {
               <a href="#how-it-works" className="text-gray-600 hover:text-red-600 transition-colors">How it Works</a>
               <a href="#download" className="text-gray-600 hover:text-red-600 transition-colors">Download</a>
             </div>
-            <Link to="/sign-in">
-              <button className="bg-red-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm sm:text-base min-h-[44px]">
-                Get Started
-              </button>
-            </Link>
+
+            {/* Sign Up and Log In Buttons */}  
+            <div className="flex space-x-4">
+                <Link to="/sign-up">
+                    <button className="bg-red-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm sm:text-base min-h-[44px]">
+                        Sign Up
+                    </button>
+                </Link>
+                
+                <Link to="/log-in">
+                    <button className="bg-red-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm sm:text-base min-h-[44px]">
+                        Log In
+                    </button>
+                </Link>
+
+                <Link to="/main-line">
+                    <button className="bg-red-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm sm:text-base min-h-[44px]">
+                        Main Line App
+                    </button>
+                </Link>
+            </div>
+
           </div>
         </div>
       </nav>
@@ -57,7 +74,7 @@ const Landing: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
-              Why Choose SafeAlert?
+              Why Choose Main Line?
             </h2>
             <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto px-4">
               Designed for emergencies when every second counts
@@ -168,7 +185,7 @@ const Landing: React.FC = () => {
             Don't Wait for an Emergency
           </h2>
           <p className="text-lg sm:text-xl text-red-100 mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
-            Download SafeAlert today and have peace of mind knowing help is just one tap away
+            Download Main Line today and have peace of mind knowing help is just one tap away
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
             <button className="bg-white text-red-600 px-6 sm:px-8 py-4 rounded-lg text-base sm:text-lg font-semibold hover:bg-gray-100 transition-colors min-h-[48px]">
