@@ -1,113 +1,218 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+
+interface UserData {
+  id: string;
+  firstname: string;
+  lastname: string;
+  fullName: string;
+  address: {
+    street: string;
+    building?: string;
+    apartment?: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
+  fullAddress: string;
+  phoneNumber: string;
+  email?: string;
+  healthConditions: string[];
+  allergies: string[];
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 const MainLine: React.FC = () => {
-  // Mock user data - in real app this would come from your backend
-  const [userData] = useState({
-    firstName: 'John',
-    lastName: 'Doe',
-    address: '123 Main Street, City, State 12345',
-    phoneNumber: '+1 (555) 123-4567',
-    email: 'john.doe@example.com',
-    medicalConditions: 'Diabetes Type 2, Hypertension',
-    allergies: 'Penicillin, Peanuts'
-  });
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const [isEmergencyActive, setIsEmergencyActive] = useState(false);
-  const [currentEmergency, setCurrentEmergency] = useState('');
-  const [aiResponse, setAiResponse] = useState('');
+  const [currentEmergency, setCurrentEmergency] = useState("");
+  const [aiResponse, setAiResponse] = useState("");
+
+  // Load user data on component mount
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        // First try to get user data from localStorage
+        const userStr = localStorage.getItem("user");
+        const token = localStorage.getItem("token");
+
+        if (!userStr || !token) {
+          setError("No user data found. Please log in.");
+          setLoading(false);
+          navigate("/log-in");
+          return;
+        }
+
+        const localUserData = JSON.parse(userStr);
+        setUserData(localUserData);
+
+        // Optionally fetch fresh data from backend
+        try {
+          const response = await fetch(
+            "http://localhost:3000/api/auth/profile",
+            {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (response.ok) {
+            const result = await response.json();
+            setUserData(result.user);
+            localStorage.setItem("user", JSON.stringify(result.user));
+          }
+        } catch (fetchError) {
+          console.log("Could not fetch fresh data, using localStorage data");
+        }
+      } catch (err) {
+        console.error("Error loading user data:", err);
+        setError("Failed to load user data");
+        navigate("/log-in");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUserData();
+  }, [navigate]);
 
   const emergencyTypes = [
     {
-      id: 'heart-attack',
-      title: 'Heart Attack',
-      description: 'Chest pain, shortness of breath',
-      icon: '🫀',
-      color: 'bg-red-600',
-      hoverColor: 'hover:bg-red-700'
+      id: "heart-attack",
+      title: "Heart Attack",
+      description: "Chest pain, shortness of breath",
+      icon: "🫀",
+      color: "bg-red-600",
+      hoverColor: "hover:bg-red-700",
     },
     {
-      id: 'choking',
-      title: 'Choking',
-      description: 'Unable to breathe, coughing',
-      icon: '😵',
-      color: 'bg-orange-600',
-      hoverColor: 'hover:bg-orange-700'
+      id: "choking",
+      title: "Choking",
+      description: "Unable to breathe, coughing",
+      icon: "😵",
+      color: "bg-orange-600",
+      hoverColor: "hover:bg-orange-700",
     },
     {
-      id: 'stroke',
-      title: 'Stroke',
-      description: 'Face drooping, speech problems',
-      icon: '🧠',
-      color: 'bg-purple-600',
-      hoverColor: 'hover:bg-purple-700'
+      id: "stroke",
+      title: "Stroke",
+      description: "Face drooping, speech problems",
+      icon: "🧠",
+      color: "bg-purple-600",
+      hoverColor: "hover:bg-purple-700",
     },
     {
-      id: 'dangerous-situation',
-      title: 'Dangerous Situation',
-      description: 'Threat, violence, accident',
-      icon: '⚠️',
-      color: 'bg-yellow-600',
-      hoverColor: 'hover:bg-yellow-700'
+      id: "dangerous-situation",
+      title: "Dangerous Situation",
+      description: "Threat, violence, accident",
+      icon: "⚠️",
+      color: "bg-yellow-600",
+      hoverColor: "hover:bg-yellow-700",
     },
     {
-      id: 'medical-emergency',
-      title: 'Medical Emergency',
-      description: 'Other urgent medical needs',
-      icon: '🏥',
-      color: 'bg-blue-600',
-      hoverColor: 'hover:bg-blue-700'
+      id: "medical-emergency",
+      title: "Medical Emergency",
+      description: "Other urgent medical needs",
+      icon: "🏥",
+      color: "bg-blue-600",
+      hoverColor: "hover:bg-blue-700",
     },
     {
-      id: 'fall-injury',
-      title: 'Fall or Injury',
-      description: 'Broken bones, head injury',
-      icon: '🩹',
-      color: 'bg-green-600',
-      hoverColor: 'hover:bg-green-700'
-    }
+      id: "fall-injury",
+      title: "Fall or Injury",
+      description: "Broken bones, head injury",
+      icon: "🩹",
+      color: "bg-green-600",
+      hoverColor: "hover:bg-green-700",
+    },
   ];
 
   const handleEmergency = async (emergencyType: string) => {
+    if (!userData) return;
+
     setIsEmergencyActive(true);
     setCurrentEmergency(emergencyType);
-    
+
     // Simulate AI processing and emergency response
-    const emergency = emergencyTypes.find(e => e.id === emergencyType);
-    
+    const emergency = emergencyTypes.find((e) => e.id === emergencyType);
+
     // Simulate AI generating response with user data
     const aiMessage = `EMERGENCY ALERT: ${emergency?.title.toUpperCase()}
 
 Patient Information:
-- Name: ${userData.firstName} ${userData.lastName}
-- Address: ${userData.address}
+- Name: ${userData.firstname} ${userData.lastname}
+- Address: ${userData.fullAddress}
 - Phone: ${userData.phoneNumber}
-- Email: ${userData.email}
+- Email: ${userData.email || "Not provided"}
 
 Medical Information:
-- Conditions: ${userData.medicalConditions}
-- Allergies: ${userData.allergies}
+- Conditions: ${
+      userData.healthConditions.length > 0
+        ? userData.healthConditions.join(", ")
+        : "None listed"
+    }
+- Allergies: ${
+      userData.allergies.length > 0
+        ? userData.allergies.join(", ")
+        : "None listed"
+    }
 
 Emergency Type: ${emergency?.title}
-Location: ${userData.address}
+Location: ${userData.fullAddress}
 Time: ${new Date().toLocaleString()}
 
 AI Assistant: I'm connecting you with emergency services. Please stay calm. Help is on the way. I'm sharing all patient information with dispatch now.`;
 
     setAiResponse(aiMessage);
-    
+
     // Simulate calling 911
     setTimeout(() => {
       // In real app, this would trigger actual emergency call
-      console.log('Calling 911...');
+      console.log("Calling 911...");
     }, 1000);
   };
 
   const cancelEmergency = () => {
     setIsEmergencyActive(false);
-    setCurrentEmergency('');
-    setAiResponse('');
+    setCurrentEmergency("");
+    setAiResponse("");
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading emergency interface...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !userData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error || "No user data found"}</p>
+          <Link
+            to="/log-in"
+            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+          >
+            Go to Login
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100">
@@ -119,17 +224,19 @@ AI Assistant: I'm connecting you with emergency services. Please stay calm. Help
               <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center">
                 <span className="text-white font-bold text-sm">AI</span>
               </div>
-              <span className="ml-2 text-xl font-bold text-gray-900">Main Line</span>
+              <span className="ml-2 text-xl font-bold text-gray-900">
+                Main Line
+              </span>
             </div>
             <div className="flex gap-3">
-              <Link 
-                to="/user-profile" 
+              <Link
+                to="/user-profile"
                 className="text-gray-600 hover:text-red-600 transition-colors text-sm font-medium"
               >
                 Profile
               </Link>
-              <Link 
-                to="/" 
+              <Link
+                to="/"
                 className="text-gray-600 hover:text-red-600 transition-colors text-sm font-medium"
               >
                 Home
@@ -148,7 +255,8 @@ AI Assistant: I'm connecting you with emergency services. Please stay calm. Help
               Emergency Response
             </h1>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Tap the emergency button that matches your situation. AI will immediately share your information with emergency services.
+              Tap the emergency button that matches your situation. AI will
+              immediately share your information with emergency services.
             </p>
           </div>
 
@@ -162,9 +270,15 @@ AI Assistant: I'm connecting you with emergency services. Please stay calm. Help
                   className={`${emergency.color} ${emergency.hoverColor} text-white rounded-xl shadow-lg p-6 sm:p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-xl`}
                 >
                   <div className="text-center">
-                    <div className="text-4xl sm:text-5xl mb-4">{emergency.icon}</div>
-                    <h3 className="text-xl sm:text-2xl font-bold mb-2">{emergency.title}</h3>
-                    <p className="text-sm sm:text-base opacity-90">{emergency.description}</p>
+                    <div className="text-4xl sm:text-5xl mb-4">
+                      {emergency.icon}
+                    </div>
+                    <h3 className="text-xl sm:text-2xl font-bold mb-2">
+                      {emergency.title}
+                    </h3>
+                    <p className="text-sm sm:text-base opacity-90">
+                      {emergency.description}
+                    </p>
                   </div>
                 </button>
               ))}
@@ -176,15 +290,29 @@ AI Assistant: I'm connecting you with emergency services. Please stay calm. Help
                 {/* Emergency Status */}
                 <div className="text-center mb-6">
                   <div className="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-                    <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    <svg
+                      className="w-10 h-10 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+                      />
                     </svg>
                   </div>
                   <h2 className="text-2xl sm:text-3xl font-bold text-red-600 mb-2">
                     EMERGENCY ACTIVE
                   </h2>
                   <p className="text-gray-600">
-                    {emergencyTypes.find(e => e.id === currentEmergency)?.title} - Connecting to emergency services...
+                    {
+                      emergencyTypes.find((e) => e.id === currentEmergency)
+                        ?.title
+                    }{" "}
+                    - Connecting to emergency services...
                   </p>
                 </div>
 
@@ -194,7 +322,9 @@ AI Assistant: I'm connecting you with emergency services. Please stay calm. Help
                     <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center mr-3">
                       <span className="text-white font-bold text-sm">AI</span>
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900">AI Assistant Response</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      AI Assistant Response
+                    </h3>
                   </div>
                   <div className="bg-white rounded-lg p-4 border-l-4 border-red-600">
                     <pre className="text-sm text-gray-800 whitespace-pre-wrap font-mono">
@@ -206,26 +336,51 @@ AI Assistant: I'm connecting you with emergency services. Please stay calm. Help
                 {/* User Information Being Shared */}
                 <div className="bg-blue-50 rounded-lg p-4 sm:p-6 mb-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <svg
+                      className="w-5 h-5 text-blue-600 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
                     </svg>
                     Information Being Shared
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="font-medium text-gray-700">Name:</span> {userData.firstName} {userData.lastName}
+                      <span className="font-medium text-gray-700">Name:</span>{" "}
+                      {userData.firstname} {userData.lastname}
                     </div>
                     <div>
-                      <span className="font-medium text-gray-700">Phone:</span> {userData.phoneNumber}
+                      <span className="font-medium text-gray-700">Phone:</span>{" "}
+                      {userData.phoneNumber}
                     </div>
                     <div className="sm:col-span-2">
-                      <span className="font-medium text-gray-700">Address:</span> {userData.address}
+                      <span className="font-medium text-gray-700">
+                        Address:
+                      </span>{" "}
+                      {userData.fullAddress}
                     </div>
                     <div className="sm:col-span-2">
-                      <span className="font-medium text-gray-700">Medical Conditions:</span> {userData.medicalConditions}
+                      <span className="font-medium text-gray-700">
+                        Medical Conditions:
+                      </span>{" "}
+                      {userData.healthConditions.length > 0
+                        ? userData.healthConditions.join(", ")
+                        : "None listed"}
                     </div>
                     <div className="sm:col-span-2">
-                      <span className="font-medium text-gray-700">Allergies:</span> {userData.allergies}
+                      <span className="font-medium text-gray-700">
+                        Allergies:
+                      </span>{" "}
+                      {userData.allergies.length > 0
+                        ? userData.allergies.join(", ")
+                        : "None listed"}
                     </div>
                   </div>
                 </div>
@@ -250,10 +405,13 @@ AI Assistant: I'm connecting you with emergency services. Please stay calm. Help
           {!isEmergencyActive && (
             <div className="mt-12 text-center">
               <div className="bg-white rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Important Safety Information</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  Important Safety Information
+                </h3>
                 <p className="text-gray-600 text-sm">
-                  This app connects you directly to emergency services. Only use in genuine emergencies. 
-                  False alarms can delay response to real emergencies and may result in legal consequences.
+                  This app connects you directly to emergency services. Only use
+                  in genuine emergencies. False alarms can delay response to
+                  real emergencies and may result in legal consequences.
                 </p>
               </div>
             </div>
