@@ -2,6 +2,8 @@ import { Document } from "mongoose";
 
 interface IAddress {
   street: string;
+  building?: string;
+  apartment?: string;
   city: string;
   state: string;
   zipCode: string;

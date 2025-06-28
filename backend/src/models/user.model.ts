@@ -28,6 +28,16 @@ const userSchema = new Schema(
         required: [true, "Street address is required"],
         trim: true,
       },
+      building: {
+        type: String,
+        required: false,
+        trim: true,
+      },
+      apartment: {
+        type: String,
+        required: false,
+        trim: true,
+      },
       city: {
         type: String,
         required: [true, "City is required"],
@@ -104,12 +114,29 @@ userSchema.virtual("fullName").get(function () {
 userSchema.virtual("fullAddress").get(function () {
   const addr = this.address as {
     street: string;
+    building?: string;
+    apartment?: string;
     city: string;
     state: string;
     zipCode: string;
     country: string;
   };
-  return `${addr.street}, ${addr.city}, ${addr.state} ${addr.zipCode}, ${addr.country}`;
+
+  let addressParts = [addr.street];
+
+  if (addr.building) {
+    addressParts.push(`Building ${addr.building}`);
+  }
+
+  if (addr.apartment) {
+    addressParts.push(`Apt ${addr.apartment}`);
+  }
+
+  addressParts.push(
+    `${addr.city}, ${addr.state} ${addr.zipCode}, ${addr.country}`
+  );
+
+  return addressParts.join(", ");
 });
 
 // Index for better query performance

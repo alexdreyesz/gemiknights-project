@@ -1,9 +1,16 @@
 import { Router, Request, Response, RequestHandler } from "express";
+import jwt from "jsonwebtoken";
 // Ensure the correct path to the user model
 import User from "../models/user.model";
 import { ICreateUser, IUpdateUser, IUserResponse } from "../types/user.types";
 
 const router = Router();
+
+// Generate JWT token
+const generateToken = (userId: string): string => {
+  const secret = process.env.JWT_SECRET || "your-secret-key";
+  return jwt.sign({ userId }, secret, { expiresIn: "7d" });
+};
 
 // Helper function to convert User document to response format
 const userToResponse = (user: any): IUserResponse => ({
@@ -21,13 +28,19 @@ const userToResponse = (user: any): IUserResponse => ({
   updatedAt: user.updatedAt,
 });
 
-// POST /api/users - Create a new user
+// POST /api/users - Create a new user (Registration)
 router.post("/", (async (req: Request, res: Response) => {
   try {
     const userData: ICreateUser = req.body;
 
     // Validate required fields
-    const requiredFields = ["firstname", "lastname", "address", "phoneNumber"];
+    const requiredFields = [
+      "firstname",
+      "lastname",
+      "address",
+      "phoneNumber",
+      "password",
+    ];
     const missingFields = requiredFields.filter(
       (field) => !userData[field as keyof ICreateUser]
     );
@@ -48,15 +61,19 @@ router.post("/", (async (req: Request, res: Response) => {
     ) {
       return res.status(400).json({
         error:
-          "Invalid address structure. Required: street, city, state, zipCode",
+          "Invalid address structure. Required: street, city, state, zipCode. Optional: building, apartment",
       });
     }
 
     const newUser = await User.create(userData);
     const userResponse = userToResponse(newUser);
 
+    // Generate JWT token
+    const token = generateToken(newUser._id.toString());
+
     res.status(201).json({
-      message: "User created successfully",
+      message: "User registered successfully",
+      token,
       user: userResponse,
     });
   } catch (error: any) {
