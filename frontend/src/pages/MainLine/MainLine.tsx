@@ -85,6 +85,7 @@ const MainLine: React.FC = () => {
   const [geminiLoading, setGeminiLoading] = useState(false);
   const [dispatcherCommunication, setDispatcherCommunication] = useState("");
   const [dispatcherLoading, setDispatcherLoading] = useState(false);
+  const [isReading, setIsReading] = useState(false);
 
   // Load user data on component mount
   useEffect(() => {
@@ -384,6 +385,45 @@ AI Assistant: I'm connecting you with emergency services. Please stay calm. Help
     }, 1000);
   };
 
+  const readDispatcherMessage = () => {
+    if (!dispatcherCommunication) return;
+
+    // Stop any existing speech
+    if (window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+      setIsReading(false);
+      return;
+    }
+
+    // Create speech synthesis utterance
+    const utterance = new SpeechSynthesisUtterance(dispatcherCommunication);
+    
+    // Configure voice settings for emergency/dispatch style
+    utterance.rate = 0.9; // Slightly slower for clarity
+    utterance.pitch = 1.0; // Normal pitch
+    utterance.volume = 1.0; // Full volume
+    
+    // Try to use a male voice if available (typical for dispatchers)
+    const voices = window.speechSynthesis.getVoices();
+    const maleVoice = voices.find(voice => 
+      voice.name.includes('Male') || 
+      voice.name.includes('David') || 
+      voice.name.includes('James') ||
+      voice.name.includes('Mark')
+    );
+    if (maleVoice) {
+      utterance.voice = maleVoice;
+    }
+
+    // Event handlers
+    utterance.onstart = () => setIsReading(true);
+    utterance.onend = () => setIsReading(false);
+    utterance.onerror = () => setIsReading(false);
+
+    // Start speaking
+    window.speechSynthesis.speak(utterance);
+  };
+
   const cancelEmergency = () => {
     setIsEmergencyActive(false);
     setAiResponse("");
@@ -392,6 +432,11 @@ AI Assistant: I'm connecting you with emergency services. Please stay calm. Help
     setGeminiLoading(false);
     setDispatcherCommunication("");
     setDispatcherLoading(false);
+    setIsReading(false);
+    // Stop any ongoing speech
+    if (window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+    }
     navigate("/user-profile");
   };
 
@@ -668,13 +713,41 @@ AI Assistant: I'm connecting you with emergency services. Please stay calm. Help
 
               {dispatcherCommunication && !dispatcherLoading && (
                 <div className="bg-red-50 rounded-lg p-4 sm:p-6 mb-6">
-                  <div className="flex items-center mb-4">
-                    <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center mr-3">
-                      <span className="text-white font-bold text-sm">911</span>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center">
+                      <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center mr-3">
+                        <span className="text-white font-bold text-sm">911</span>
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        911 Emergency Dispatch
+                      </h3>
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      911 Emergency Dispatch
-                    </h3>
+                    <button
+                      onClick={readDispatcherMessage}
+                      className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        isReading 
+                          ? 'bg-red-600 text-white hover:bg-red-700' 
+                          : 'bg-white text-red-600 border border-red-600 hover:bg-red-50'
+                      }`}
+                      title={isReading ? "Stop reading" : "Read aloud"}
+                    >
+                      {isReading ? (
+                        <>
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+                          </svg>
+                          Stop
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                          </svg>
+                          Read Aloud
+                        </>
+                      )}
+                    </button>
                   </div>
                   <div className="bg-white rounded-lg p-6 border-l-4 border-red-600">
                     <div className="flex items-center mb-3">
