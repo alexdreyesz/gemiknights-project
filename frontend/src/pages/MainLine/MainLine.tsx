@@ -281,7 +281,10 @@ Format your response as a clear, concise medical analysis suitable for emergency
       
       const model = 'gemini-2.5-pro';
       
-      const prompt = `You are a professional 911 emergency dispatcher. A medical emergency call has just come in. 
+      const prompt = `You are an AI talking to a 911 dispatcher Please provide as much information as possible to the dispatcher. Please do not add the dispatcher conversation only the AI one but still simulate the conversation. 
+
+Emergency Type: Medical Emergency
+Location: ${userData.fullAddress}
 
 Patient Information:
 - Name: ${userData.firstname} ${userData.lastname}
@@ -290,9 +293,6 @@ Patient Information:
 - Medical Conditions: ${userData.healthConditions.length > 0 ? userData.healthConditions.join(", ") : "None listed"}
 - Allergies: ${userData.allergies.length > 0 ? userData.allergies.join(", ") : "None listed"}
 
-Emergency Type: Medical Emergency
-Location: ${userData.fullAddress}
-
 Please simulate a realistic 911 dispatch conversation. Include:
 1. Initial greeting and emergency confirmation
 2. Gathering essential information
@@ -300,7 +300,7 @@ Please simulate a realistic 911 dispatch conversation. Include:
 4. Confirming dispatch of emergency services
 5. Staying on the line until help arrives
 
-Format as a realistic dispatch conversation with timestamps. Be professional, calm, and reassuring.`;
+Be professional, calm, and reassuring.`;
 
       const contents = [
         {
