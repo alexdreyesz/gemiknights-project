@@ -83,6 +83,8 @@ const MainLine: React.FC = () => {
   const [aiResponse, setAiResponse] = useState("");
   const [geminiAnalysis, setGeminiAnalysis] = useState("");
   const [geminiLoading, setGeminiLoading] = useState(false);
+  const [dispatcherCommunication, setDispatcherCommunication] = useState("");
+  const [dispatcherLoading, setDispatcherLoading] = useState(false);
 
   // Load user data on component mount
   useEffect(() => {
@@ -258,6 +260,80 @@ Format your response as a clear, concise medical analysis suitable for emergency
     }
   };
 
+  const simulateDispatcherCall = async () => {
+    if (!userData) return;
+
+    setDispatcherLoading(true);
+    setDispatcherCommunication("");
+
+    try {
+      const ai = new GoogleGenAI({
+        apiKey: import.meta.env.VITE_GEMINI_API_KEY,
+      });
+      
+      const config = {
+        thinkingConfig: {
+          thinkingBudget: -1,
+        },
+        responseMimeType: 'text/plain',
+      };
+      
+      const model = 'gemini-2.5-pro';
+      
+      const prompt = `You are a professional 911 emergency dispatcher. A medical emergency call has just come in. 
+
+Patient Information:
+- Name: ${userData.firstname} ${userData.lastname}
+- Address: ${userData.fullAddress}
+- Phone: ${userData.phoneNumber}
+- Medical Conditions: ${userData.healthConditions.length > 0 ? userData.healthConditions.join(", ") : "None listed"}
+- Allergies: ${userData.allergies.length > 0 ? userData.allergies.join(", ") : "None listed"}
+
+Emergency Type: Medical Emergency
+Location: ${userData.fullAddress}
+
+Please simulate a realistic 911 dispatch conversation. Include:
+1. Initial greeting and emergency confirmation
+2. Gathering essential information
+3. Providing reassurance and instructions
+4. Confirming dispatch of emergency services
+5. Staying on the line until help arrives
+
+Format as a realistic dispatch conversation with timestamps. Be professional, calm, and reassuring.`;
+
+      const contents = [
+        {
+          role: 'user',
+          parts: [
+            {
+              text: prompt,
+            },
+          ],
+        },
+      ];
+
+      const response = await ai.models.generateContentStream({
+        model,
+        config,
+        contents,
+      });
+
+      let fullResponse = "";
+      for await (const chunk of response) {
+        if (chunk.text) {
+          fullResponse += chunk.text;
+          setDispatcherCommunication(fullResponse);
+        }
+      }
+
+    } catch (error) {
+      console.error("Error calling Gemini API for dispatcher:", error);
+      setDispatcherCommunication("Dispatcher communication temporarily unavailable. Emergency services have been notified.");
+    } finally {
+      setDispatcherLoading(false);
+    }
+  };
+
   const activateEmergency = async () => {
     if (!userData) return;
 
@@ -297,6 +373,9 @@ AI Assistant: I'm connecting you with emergency services. Please stay calm. Help
     
     // Start Gemini analysis
     analyzeWithGemini();
+    
+    // Start dispatcher simulation
+    simulateDispatcherCall();
 
     // Simulate calling 911
     setTimeout(() => {
@@ -311,6 +390,8 @@ AI Assistant: I'm connecting you with emergency services. Please stay calm. Help
     setEmergencySummary(null);
     setGeminiAnalysis("");
     setGeminiLoading(false);
+    setDispatcherCommunication("");
+    setDispatcherLoading(false);
     navigate("/user-profile");
   };
 
@@ -554,6 +635,57 @@ AI Assistant: I'm connecting you with emergency services. Please stay calm. Help
                     <div className="prose prose-sm max-w-none">
                       <pre className="text-sm text-gray-800 whitespace-pre-wrap font-mono leading-relaxed">
                         {geminiAnalysis}
+                      </pre>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 911 Dispatcher Communication */}
+              {dispatcherLoading && (
+                <div className="bg-red-50 rounded-lg p-4 sm:p-6 mb-6">
+                  <div className="flex items-center mb-4">
+                    <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center mr-3">
+                      <span className="text-white font-bold text-sm">911</span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      911 Emergency Dispatch
+                    </h3>
+                  </div>
+                  <div className="bg-white rounded-lg p-6 border-l-4 border-red-600">
+                    <div className="text-center py-4">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto mb-3"></div>
+                      <p className="text-gray-600 font-medium">
+                        Connecting to 911 emergency services...
+                      </p>
+                      <p className="text-sm text-gray-500 mt-2">
+                        Establishing communication with dispatcher
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {dispatcherCommunication && !dispatcherLoading && (
+                <div className="bg-red-50 rounded-lg p-4 sm:p-6 mb-6">
+                  <div className="flex items-center mb-4">
+                    <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center mr-3">
+                      <span className="text-white font-bold text-sm">911</span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      911 Emergency Dispatch
+                    </h3>
+                  </div>
+                  <div className="bg-white rounded-lg p-6 border-l-4 border-red-600">
+                    <div className="flex items-center mb-3">
+                      <div className="w-4 h-4 bg-red-600 rounded-full mr-3 animate-pulse"></div>
+                      <span className="text-sm font-medium text-red-600">
+                        LIVE DISPATCHER COMMUNICATION
+                      </span>
+                    </div>
+                    <div className="prose prose-sm max-w-none">
+                      <pre className="text-sm text-gray-800 whitespace-pre-wrap font-mono leading-relaxed">
+                        {dispatcherCommunication}
                       </pre>
                     </div>
                   </div>
