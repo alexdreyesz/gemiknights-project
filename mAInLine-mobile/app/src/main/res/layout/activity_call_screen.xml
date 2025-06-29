@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    tools:context=".CallScreen">
+
+    <!-- Top red banner -->
+
+    <View
+        android:id="@+id/topBanner"
+        android:layout_width="0dp"
+        android:layout_height="80dp"
+        android:background="#B71C1C"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/txtEmergencySummary"
+        android:layout_width="416dp"
+        android:layout_height="252dp"
+        android:layout_marginTop="72dp"
+        android:background="#FFEBEE"
+        android:gravity="center"
+        android:padding="16dp"
+        android:text="Emergency summary will appear here"
+        android:textColor="#B71C1C"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/topBanner"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <TextView
+        android:id="@+id/bannerTitle"
+        android:layout_width="118dp"
+        android:layout_height="40dp"
+        android:fontFamily="sans-serif-condensed"
+        android:text="mAInLine"
+        android:textColor="#FFFFFF"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@id/topBanner"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/topBanner" />
+
+    <!-- Medical Emergency Button -->
+
+    <!-- Physical Emergency Button -->
+
+    <!-- Home Button -->
+
+    <Button
+        android:id="@+id/btnMedicalEmergency"
+        android:layout_width="185dp"
+        android:layout_height="293dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="342dp"
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="#B71C1C"
+        android:elevation="6dp"
+        android:fontFamily="sans-serif-medium"
+        android:letterSpacing="0.05"
+        android:text="Medical Emergency"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/topBanner" />
+
+    <Button
+        android:id="@+id/btnPhysicalEmergency"
+        android:layout_width="185dp"
+        android:layout_height="293dp"
+        android:layout_marginTop="342dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="#B71C1C"
+        android:elevation="6dp"
+        android:fontFamily="sans-serif-medium"
+        android:letterSpacing="0.05"
+        android:text="Physical Emergency"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/topBanner" />
+
+    <Button
+        android:id="@+id/btnHome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:backgroundTint="#FFFFFF"
+        android:elevation="4dp"
+        android:text="Home"
+        android:textColor="#B71C1C"
+        app:layout_constraintBottom_toBottomOf="@+id/topBanner"
+        app:layout_constraintEnd_toEndOf="@+id/topBanner"
+        app:layout_constraintHorizontal_bias="0.108"
+        app:layout_constraintStart_toStartOf="@+id/topBanner"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.666" />
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

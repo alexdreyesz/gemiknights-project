@@ -1,14 +1,6 @@
-# Backend API with Authentication
+# Backend API
 
-This backend provides user management and authentication functionality with support for login using either email or phone number.
-
-## Features
-
-- User registration and management
-- Login with email or phone number + password
-- JWT-based authentication
-- Protected routes
-- Password hashing with bcrypt
+This is the backend API for the emergency response application.
 
 ## Setup
 
@@ -24,17 +16,38 @@ npm install
 cp example.env .env
 ```
 
-3. Set your JWT secret in the `.env` file:
+3. Configure your environment variables in `.env`:
+   - `JWT_SECRET`: A secure random string for JWT token signing
+   - `GEMINI_API_KEY`: Your Google Gemini API key (see setup instructions below)
 
-```
-JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+## Google Gemini API Setup
+
+To enable AI-powered emergency analysis, you need to set up Google Gemini:
+
+1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Create a new API key
+3. Add the API key to your `.env` file:
+   ```
+   GEMINI_API_KEY=your_api_key_here
+   ```
+
+The Gemini API is used to analyze user health conditions and allergies to provide intelligent emergency response guidance.
+
+## Running the Server
+
+Development mode:
+
+```bash
+npm run dev
 ```
 
-4. Start the server:
+Production mode:
 
 ```bash
 npm start
 ```
+
+The server will run on `http://localhost:3000` by default.
 
 ## API Endpoints
 
@@ -98,6 +111,46 @@ Get user by ID.
 #### PUT /api/users/:id
 
 Update user.
+
+#### DELETE /api/users/:id
+
+Delete user.
+
+#### POST /api/users/:id/health-conditions
+
+Add health condition.
+
+#### DELETE /api/users/:id/health-conditions/:condition
+
+Remove health condition.
+
+#### POST /api/users/:id/allergies
+
+Add allergy.
+
+#### DELETE /api/users/:id/allergies/:allergy
+
+Remove allergy.
+
+### Emergency
+
+#### POST /api/emergency/analyze
+
+Get AI analysis for emergency situation (protected).
+
+## Database
+
+The application uses MongoDB with Mongoose ODM. Make sure MongoDB is running locally or update the connection string in `src/config/database.ts`.
+
+## Features
+
+- User authentication with JWT
+- User profile management
+- Health conditions and allergies tracking
+- AI-powered emergency analysis using Google Gemini
+- RESTful API design
+- TypeScript support
+- CORS enabled for frontend integration
 
 ## Testing
 

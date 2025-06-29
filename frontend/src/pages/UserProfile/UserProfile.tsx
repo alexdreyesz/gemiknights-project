@@ -481,9 +481,9 @@ const UserProfile: React.FC = () => {
                 Tap to alert emergency services with your location and medical
                 information
               </p>
-              <Link to="/main-line">
-                <button className="w-full bg-white text-red-600 py-3 px-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
-                  EMERGENCY
+              <Link to="/main-line?emergency=true">
+                <button className="w-full bg-white text-red-600 py-3 px-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors text-lg">
+                  🚨 EMERGENCY 🚨
                 </button>
               </Link>
             </div>

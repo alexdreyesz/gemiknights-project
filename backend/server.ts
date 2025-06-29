@@ -3,6 +3,7 @@ const cors = require("cors");
 import { connectDB } from "./src/config/database";
 import userRoutes from "./src/routes/user.routes";
 import authRoutes from "./src/routes/auth.routes";
+import emergencyRoutes from "./src/routes/emergency.routes";
 
 // Load environment variables
 require("dotenv").config();
@@ -26,6 +27,7 @@ connectDB();
 // Routes
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/emergency", emergencyRoutes);
 
 app.listen(port, () => {
   console.log(`🚀 Server running on http://localhost:${port}`);
