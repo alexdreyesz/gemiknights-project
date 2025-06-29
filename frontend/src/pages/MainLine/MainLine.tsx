@@ -1,6 +1,45 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
+import {
+  GoogleGenAI,
+} from '@google/genai';
+
+async function main() {
+  const ai = new GoogleGenAI({
+    apiKey: import.meta.env.VITE_GEMINI_API_KEY,
+  });
+  const config = {
+    thinkingConfig: {
+      thinkingBudget: -1,
+    },
+    responseMimeType: 'text/plain',
+  };
+  const model = 'gemini-2.5-pro';
+  const contents = [
+    {
+      role: 'user',
+      parts: [
+        {
+          text: `INSERT_INPUT_HERE`,
+        },
+      ],
+    },
+  ];
+
+  const response = await ai.models.generateContentStream({
+    model,
+    config,
+    contents,
+  });
+  let fileIndex = 0;
+  for await (const chunk of response) {
+    console.log(chunk.text);
+  }
+}
+
+main();
+
 interface UserData {
   id: string;
   firstname: string;
@@ -42,6 +81,8 @@ const MainLine: React.FC = () => {
 
   const [isEmergencyActive, setIsEmergencyActive] = useState(false);
   const [aiResponse, setAiResponse] = useState("");
+  const [geminiAnalysis, setGeminiAnalysis] = useState("");
+  const [geminiLoading, setGeminiLoading] = useState(false);
 
   // Load user data on component mount
   useEffect(() => {
@@ -144,6 +185,79 @@ const MainLine: React.FC = () => {
     }
   };
 
+  const analyzeWithGemini = async () => {
+    if (!userData) return;
+
+    setGeminiLoading(true);
+    setGeminiAnalysis("");
+
+    try {
+      const ai = new GoogleGenAI({
+        apiKey: import.meta.env.VITE_GEMINI_API_KEY,
+      });
+      
+      const config = {
+        thinkingConfig: {
+          thinkingBudget: -1,
+        },
+        responseMimeType: 'text/plain',
+      };
+      
+      const model = 'gemini-2.5-pro';
+      
+      const prompt = `EMERGENCY MEDICAL ANALYSIS REQUEST
+
+Patient Information:
+- Name: ${userData.firstname} ${userData.lastname}
+- Age: ${userData.createdAt ? Math.floor((Date.now() - new Date(userData.createdAt).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : 'Unknown'} years old
+- Medical Conditions: ${userData.healthConditions.length > 0 ? userData.healthConditions.join(", ") : "None listed"}
+- Allergies: ${userData.allergies.length > 0 ? userData.allergies.join(", ") : "None listed"}
+- Location: ${userData.fullAddress}
+
+Emergency Type: Medical Emergency
+
+Please provide:
+1. A brief medical assessment based on the patient's conditions
+2. Potential emergency complications to watch for
+3. Immediate first aid recommendations if applicable
+4. Priority level for emergency response (high/medium/low)
+5. Key information for emergency responders
+
+Format your response as a clear, concise medical analysis suitable for emergency dispatch.`;
+
+      const contents = [
+        {
+          role: 'user',
+          parts: [
+            {
+              text: prompt,
+            },
+          ],
+        },
+      ];
+
+      const response = await ai.models.generateContentStream({
+        model,
+        config,
+        contents,
+      });
+
+      let fullResponse = "";
+      for await (const chunk of response) {
+        if (chunk.text) {
+          fullResponse += chunk.text;
+          setGeminiAnalysis(fullResponse);
+        }
+      }
+
+    } catch (error) {
+      console.error("Error calling Gemini API:", error);
+      setGeminiAnalysis("AI analysis temporarily unavailable. Emergency services have been notified with your information.");
+    } finally {
+      setGeminiLoading(false);
+    }
+  };
+
   const activateEmergency = async () => {
     if (!userData) return;
 
@@ -180,6 +294,9 @@ AI Assistant: I'm connecting you with emergency services. Please stay calm. Help
 
     // Get AI summary from Gemini
     await getEmergencySummary();
+    
+    // Start Gemini analysis
+    analyzeWithGemini();
 
     // Simulate calling 911
     setTimeout(() => {
@@ -192,6 +309,8 @@ AI Assistant: I'm connecting you with emergency services. Please stay calm. Help
     setIsEmergencyActive(false);
     setAiResponse("");
     setEmergencySummary(null);
+    setGeminiAnalysis("");
+    setGeminiLoading(false);
     navigate("/user-profile");
   };
 
@@ -386,6 +505,57 @@ AI Assistant: I'm connecting you with emergency services. Please stay calm. Help
                       Analyzing medical conditions and generating emergency
                       guidance...
                     </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Gemini AI Analysis Results */}
+              {geminiLoading && (
+                <div className="bg-green-50 rounded-lg p-4 sm:p-6 mb-6">
+                  <div className="flex items-center mb-4">
+                    <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center mr-3">
+                      <span className="text-white font-bold text-sm">AI</span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Gemini AI Medical Analysis
+                    </h3>
+                  </div>
+                  <div className="bg-white rounded-lg p-6 border-l-4 border-green-600">
+                    <div className="text-center py-4">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-3"></div>
+                      <p className="text-gray-600 font-medium">
+                        Analyzing patient data and generating medical assessment...
+                      </p>
+                      <p className="text-sm text-gray-500 mt-2">
+                        This may take a few moments
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {geminiAnalysis && !geminiLoading && (
+                <div className="bg-green-50 rounded-lg p-4 sm:p-6 mb-6">
+                  <div className="flex items-center mb-4">
+                    <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center mr-3">
+                      <span className="text-white font-bold text-sm">AI</span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Gemini AI Medical Analysis
+                    </h3>
+                  </div>
+                  <div className="bg-white rounded-lg p-6 border-l-4 border-green-600">
+                    <div className="flex items-center mb-3">
+                      <div className="w-4 h-4 bg-green-600 rounded-full mr-3 animate-pulse"></div>
+                      <span className="text-sm font-medium text-green-600">
+                        REAL-TIME AI ANALYSIS
+                      </span>
+                    </div>
+                    <div className="prose prose-sm max-w-none">
+                      <pre className="text-sm text-gray-800 whitespace-pre-wrap font-mono leading-relaxed">
+                        {geminiAnalysis}
+                      </pre>
+                    </div>
                   </div>
                 </div>
               )}
