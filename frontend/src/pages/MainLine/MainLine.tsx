@@ -86,6 +86,9 @@ const MainLine: React.FC = () => {
   const [dispatcherCommunication, setDispatcherCommunication] = useState("");
   const [dispatcherLoading, setDispatcherLoading] = useState(false);
   const [isReading, setIsReading] = useState(false);
+  const [soundUrl, setSoundUrl] = useState("");
+  const [isTransmitting, setIsTransmitting] = useState(false);
+  const [transmissionData, setTransmissionData] = useState("");
 
   // Load user data on component mount
   useEffect(() => {
@@ -424,6 +427,98 @@ AI Assistant: I'm connecting you with emergency services. Please stay calm. Help
     window.speechSynthesis.speak(utterance);
   };
 
+  const generateSoundTransmission = () => {
+    if (!soundUrl.trim()) return;
+
+    setIsTransmitting(true);
+    setTransmissionData("");
+
+    // Simulate sound-based data transmission
+    const transmissionText = `SOUND-BASED DATA TRANSMISSION INITIATED
+
+URL: ${soundUrl}
+Timestamp: ${new Date().toLocaleString()}
+Frequency: 2.4 GHz
+Modulation: FSK (Frequency-Shift Keying)
+Data Rate: 1200 bps
+
+Transmission Protocol:
+- Converting URL to audio frequency patterns
+- Encoding patient data in sound waves
+- Broadcasting emergency information via acoustic channels
+- Establishing secure audio communication link
+
+Patient Data Encoded:
+- Name: ${userData?.firstname} ${userData?.lastname}
+- Location: ${userData?.fullAddress}
+- Medical Conditions: ${userData?.healthConditions?.join(", ") || "None"}
+- Allergies: ${userData?.allergies?.join(", ") || "None"}
+
+Audio Transmission Status: ACTIVE
+Signal Strength: 85%
+Data Integrity: 98.2%
+Connection: ESTABLISHED
+
+Transmitting emergency data through sound-based protocol...`;
+
+    // Simulate real-time transmission
+    let currentText = "";
+    const words = transmissionText.split(" ");
+    let wordIndex = 0;
+
+    const transmissionInterval = setInterval(() => {
+      if (wordIndex < words.length) {
+        currentText += words[wordIndex] + " ";
+        setTransmissionData(currentText);
+        wordIndex++;
+      } else {
+        clearInterval(transmissionInterval);
+        setIsTransmitting(false);
+      }
+    }, 100);
+
+    // Cleanup on unmount
+    return () => clearInterval(transmissionInterval);
+  };
+
+  const playTransmissionSound = () => {
+    if (!transmissionData) return;
+
+    // Create audio context for sound generation
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    
+    // Generate a series of tones to represent data transmission
+    const frequencies = [800, 1200, 1600, 2000]; // Different frequencies for data encoding
+    let currentIndex = 0;
+
+    const playTone = () => {
+      if (currentIndex >= frequencies.length) {
+        audioContext.close();
+        return;
+      }
+
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.frequency.setValueAtTime(frequencies[currentIndex], audioContext.currentTime);
+      oscillator.type = 'sine';
+
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.5);
+
+      currentIndex++;
+      setTimeout(playTone, 600);
+    };
+
+    playTone();
+  };
+
   const cancelEmergency = () => {
     setIsEmergencyActive(false);
     setAiResponse("");
@@ -433,6 +528,9 @@ AI Assistant: I'm connecting you with emergency services. Please stay calm. Help
     setDispatcherCommunication("");
     setDispatcherLoading(false);
     setIsReading(false);
+    setSoundUrl("");
+    setIsTransmitting(false);
+    setTransmissionData("");
     // Stop any ongoing speech
     if (window.speechSynthesis.speaking) {
       window.speechSynthesis.cancel();
@@ -764,6 +862,98 @@ AI Assistant: I'm connecting you with emergency services. Please stay calm. Help
                   </div>
                 </div>
               )}
+
+              {/* Sound-Based Data Transmission */}
+              <div className="bg-purple-50 rounded-lg p-4 sm:p-6 mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center mr-3">
+                      <span className="text-white font-bold text-sm">🔊</span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Sound-Based Transmission
+                    </h3>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={generateSoundTransmission}
+                      disabled={isTransmitting || !soundUrl.trim()}
+                      className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        isTransmitting || !soundUrl.trim()
+                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          : 'bg-purple-600 text-white hover:bg-purple-700'
+                      }`}
+                      title="Start transmission"
+                    >
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                      </svg>
+                      {isTransmitting ? "Transmitting..." : "Transmit"}
+                    </button>
+                    {transmissionData && !isTransmitting && (
+                      <button
+                        onClick={playTransmissionSound}
+                        className="flex items-center px-3 py-2 rounded-lg text-sm font-medium bg-white text-purple-600 border border-purple-600 hover:bg-purple-50 transition-colors"
+                        title="Play transmission sound"
+                      >
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                        </svg>
+                        Play Sound
+                      </button>
+                    )}
+                  </div>
+                </div>
+                
+                {/* URL Input */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Transmission URL
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="url"
+                      value={soundUrl}
+                      onChange={(e) => setSoundUrl(e.target.value)}
+                      placeholder="Enter URL for sound-based transmission..."
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      disabled={isTransmitting}
+                    />
+                  </div>
+                </div>
+
+                {/* Transmission Status */}
+                {isTransmitting && (
+                  <div className="bg-white rounded-lg p-6 border-l-4 border-purple-600">
+                    <div className="text-center py-4">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-3"></div>
+                      <p className="text-gray-600 font-medium">
+                        Converting data to sound frequencies...
+                      </p>
+                      <p className="text-sm text-gray-500 mt-2">
+                        Encoding emergency information in audio signals
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Transmission Results */}
+                {transmissionData && !isTransmitting && (
+                  <div className="bg-white rounded-lg p-6 border-l-4 border-purple-600">
+                    <div className="flex items-center mb-3">
+                      <div className="w-4 h-4 bg-purple-600 rounded-full mr-3 animate-pulse"></div>
+                      <span className="text-sm font-medium text-purple-600">
+                        SOUND-BASED TRANSMISSION COMPLETE
+                      </span>
+                    </div>
+                    <div className="prose prose-sm max-w-none">
+                      <pre className="text-sm text-gray-800 whitespace-pre-wrap font-mono leading-relaxed">
+                        {transmissionData}
+                      </pre>
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {emergencySummary && (
                 <div className="bg-blue-50 rounded-lg p-4 sm:p-6 mb-6">
